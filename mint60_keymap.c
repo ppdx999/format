@@ -1,1 +1,0 @@
-/home/ppdx999/qmk_firmware/keyboards/mint60/keymaps/ppdx999/keymap.c
