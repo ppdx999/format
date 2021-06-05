@@ -18,6 +18,11 @@
 _main(){
 }
 
+arg_checks(){
+	[ $# -eq 0 ] && [ ! -p /dev/stdin ] &&  error_exit "Arg Error: no argument passed" 
+	#[ -d "$1" ] &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
+}
+
 init(){
 	:
 	# Debug mode
@@ -31,6 +36,14 @@ init(){
 	#set -e -o pipefail
 
 	#prevent_malcious_env_var
+}
+
+cmd_exist(){
+	if command -v "$1" &> /dev/null; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 prevent_malcious_env_var(){
@@ -79,20 +92,14 @@ make_tempdir() {
 	)
 }
 
-arg_checks(){
-	[ $# -eq 0 ] && [ ! -p /dev/stdin ] &&  error_exit "Arg Error: no argument passed" 
-	#[ -d "$1" ] &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
-}
-
 if [ -p /dev/stdin ]; then
 		# Take the entire standard output as input
 		#_main "$(cat -)"
 
 		# Receive line-by-line input
-		while read line
+		while read -r line
 		do
-				echo "$line"
-				_main "$@"
+				_main $line 
 		done
 else
 		_main "$@"
