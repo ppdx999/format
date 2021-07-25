@@ -3,10 +3,6 @@
 #include<vector>
 using namespace std;
 
-// for loop
-#define FOR(i,l,r) for(size_t i=(l);i<(r);++i)
-#define REP(i,n) FOR(i,0,n)
-
 // stdout for debug
 #ifdef _DEBUG 
 #define debug_1(x1) cout<<#x1<<": "<<x1<<endl
@@ -24,24 +20,32 @@ void debug_vv(vector<vector<int>> v){
 	int n=v.size();
 	int m=v[0].size();
 	
+	// print out Col Number
 	cout << "  ";
-	REP(i,m){
+	for(int i=0; i<m; i++){
 		cout << " " << i;
 	}
 	cout << endl;
+	
+	// Horizonal Line
 	cout << "  ";
-	REP(i,m){
+	for(int i=0; i<m; i++){
 		cout << " " << "-";
 	}
 
-	REP(i,n){
+	for(int i=0; i<n; i++){
 		cout << endl;
+		
+		// print out Row Number
 		cout << i << "| ";
-		REP(j,m)
+
+		// print out Contents
+		for(int j=0; j<m; j++)
 			cout << v[i][j] << " ";
 	}
 	cout << endl;
 }
+
 
 void debug_v(vector<int> v){
 	for(int i : v)
