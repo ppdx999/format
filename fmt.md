@@ -1,4 +1,5 @@
 ---
-title:
-author:ppdx999
+title: ''
+subtitle: ''
+author: 'ppdx999'
 ---
