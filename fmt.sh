@@ -1,33 +1,48 @@
 #! /bin/bash
+
+###############################################################################
 #
-# @(#) hoge.sh ver.1.0.0 2008.04.24
+# NAME - DESCRIPTION
 #
-# Usage:
-#   $0 [-a] [-b] [-f filename] arg1 ...
+# USAGE       :  name.sh [options] [hoge] 
+# ARGS        :
+# OPTIONS     :
+# DESCRIPTION :
 # 
-# Description:
-#   hogehogehoge
 # 
-# Options:
-#   -a    aaaaaaaaaa
-#   -b    bbbbbbbbbb
-#   -f    ffffffffff
-#	
+# 
+# Written by ppdx999 on 2020-08-14
+# 
+# 
+# This is a public-domain software (CC0). It means that all of the
+# people can use this for any purposes with no restrictions at all. 
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+# 
+# For more information, please refer to <http://unlicense.org>
+# 
 ###############################################################################
 
 ### Knowledges notes ###
 
 # set options explanations
-# 	-u          : If undefined variable appear, stop and exit
 # 	-v          : Prints shell input lines as they are read
 # 	-x          : Print command traces before executing command
 # 	-e          : when error happen, exit
+# 	-u          : If undefined variable appear, stop and exit
 # 	-o pipefail : even if error happen on the pipeline, exit
 
 
 # example of argument checks
-#    [ $# -eq 0 ]  &&  error_exit "Arg Error: no argument passed" 
-#    [ -d "$1" ]   &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
+#   [ $# -eq 0 ] && error_exit "Arg Error: no argument passed" 
+#   [ $# -eq 0 ] && print_usage_and_exit
+#   [ -d "$1" ]  && error_exit "Error: ""$1"" doesn't exist or isn't directory" 
 
 # Variable scope
 #   - All variable basically global variable
@@ -35,26 +50,55 @@
 #       but changes inside the subprocess doesn't affect parent one.
 #   - Processes with the same bashid have the same namespace.
 #   - source doesn't change bashid
-#   - sh ./filename change bashid. so you need 'export' if using var inside child process.
-#   - Var decleared 'local' inside a function limit its scope inside the function.
+#   - sh cmd renew bashid. So you have to 'export',
+#       if using var inside child process.
+#   - Var decleared 'local' in a function limits its scope inside the function.
 
 # Pipeline
 #   if [ -p /dev/stdin ]  : executed on a pipeline
 #   if [ -p /dev/stdout ] : there is a pipe after this command execution
 
-
 ###############################################################################
 
-_main(){
+
+
+###############################################################################
+# Initial configuration
+###############################################################################
+
+# === Initialize shell environment ===================================
+set -eu
+if command -v umask &> /dev/null; then umask 0022; fi
+PATH='/bin:/usr/bin:$HOME/bin'
+IFS=$(printf ' \t\n_'); IFS={IFS%_}
+export IFS LC_ALL=C LANG=C PATH
+
+# === Define the commonly used and useful functions ===================
+
+error_exit() {
+	echo "$0: ${1:-"Unknown Error"}" 1>&2
+	exit 1
 }
 
-arg_checks(){
-	[ $# -eq 0 ] && [ ! -p /dev/stdin ] &&  error_exit "Arg Error: no argument passed" 
-	#[ -d "$1" ] &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
+print_usage_and_exit() {
+  cat <<-USAGE 1>&2
+		Usage       : ${0##*/} [options] [XML_file]
+		Description :
+	USAGE
+  exit 1
 }
 
+detectOS() {
+   case "$(uname -s)" in
+   	Linux*)     echo Linux;;
+   	Darwin*)    echo Mac;;
+   	CYGWIN*)    echo Cygwin;;
+   	MINGW*)     echo MinGw;;
+   	*)          echo "UNKNOWN:$(uname -s)"
+   esac
+}
 
-cmd_exist(){
+cmd_exist() {
 	if command -v "$1" &> /dev/null; then
 		return 0
 	else
@@ -62,18 +106,6 @@ cmd_exist(){
 	fi
 }
 
-prevent_malcious_env_var(){
-	set -u # If undefined variable appear, stop and exit
-	#umaks 0022
-	PATH=/bin:/usr/bin:$HOME/bin
-	IFS=$(printf ' \t\n_'); IFS={IFS%_}
-	export IFS LC_ALL=C LANG=C PATH
-}
-
-error_exit(){
-	echo "$0: ${1:-"Unknown Error"}" 1>&2
-	exit 1
-}
 
 make_tempfile() {
 	#--------------------------------------------------
@@ -106,6 +138,16 @@ make_tempdir() {
 	mkdir "$file" || return $?
 	echo "$file"
 	)
+}
+
+
+###############################################################################
+# Main Routine 
+###############################################################################
+
+_main() {
+
+	[ $# -eq 0 ] && print_usage_and_exit
 }
 
 if [ -p /dev/stdin ]; then
