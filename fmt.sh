@@ -15,6 +15,36 @@
 #	
 ###############################################################################
 
+### Knowledges notes ###
+
+# set options explanations
+# 	-u          : If undefined variable appear, stop and exit
+# 	-v          : Prints shell input lines as they are read
+# 	-x          : Print command traces before executing command
+# 	-e          : when error happen, exit
+# 	-o pipefail : even if error happen on the pipeline, exit
+
+
+# example of argument checks
+#    [ $# -eq 0 ]  &&  error_exit "Arg Error: no argument passed" 
+#    [ -d "$1" ]   &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
+
+# Variable scope
+#   - All variable basically global variable
+#   - In subshell, global var in the parent process can be reffered,
+#       but changes inside the subprocess doesn't affect parent one.
+#   - Processes with the same bashid have the same namespace.
+#   - source doesn't change bashid
+#   - sh ./filename change bashid. so you need 'export' if using var inside child process.
+#   - Var decleared 'local' inside a function limit its scope inside the function.
+
+# Pipeline
+#   if [ -p /dev/stdin ]  : executed on a pipeline
+#   if [ -p /dev/stdout ] : there is a pipe after this command execution
+
+
+###############################################################################
+
 _main(){
 }
 
@@ -23,20 +53,6 @@ arg_checks(){
 	#[ -d "$1" ] &&  error_exit "Error: ""$1"" doesn't exist or isn't directory" 
 }
 
-init(){
-	:
-	# Debug mode
-	#		-v : Prints shell input lines as they are read
-	#		-x : Print command traces before executing command
-	#set -xv
-
-	# Error Handling
-	#		-e : when error happen, exit
-	#		-o pipefail : even if error happen on the pipeline, exit
-	#set -e -o pipefail
-
-	#prevent_malcious_env_var
-}
 
 cmd_exist(){
 	if command -v "$1" &> /dev/null; then
