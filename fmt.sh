@@ -76,7 +76,7 @@ case $PATH in :*) PATH=${PATH#?};; esac
 IFS=$(printf ' \t\n_'); IFS={IFS%_}
 export IFS
 
-# === Define the commonly used and useful functions ===================
+# === Define the functions for printing usage and error message ======
 
 error_exit() {
   echo "$0: ${1:-"Unknown Error"}" 1>&2
@@ -87,9 +87,38 @@ print_usage_and_exit() {
   cat <<-USAGE 1>&2
   Usage       : ${0##*/} [options] [XML_file]
   Description :
+  Requirement :
 USAGE
 exit 1
 }
+
+# === Check requirement  =============================================
+
+which which >/dev/null 2>&1 || {
+  which() {
+    command -v "$1" 2>/dev/null |
+      awk '{if($0 !~ /^$/) print; ok=1;}
+         END{if(ok==0){print "which: not found" > "/dev/stderr"; exit 1}}'
+  }
+}
+
+(
+  fillRequirement(){
+    which "$1" >/dev/null  ||
+    error_exit \
+    "Error: ${0##*/} require ${1} ${2+You can download it at} ${2:-}" &&
+    filled=false
+  }
+  filled=true
+  misc_tools="https://github.com/ShellShoccar-jpn/misc-tools"
+  open_tukubai="https://github.com/ShellShoccar-jpn/Open-usp-Tukubai"
+  Parsrs="https://github.com/ShellShoccar-jpn/Parsrs"
+  fillRequirement curl
+  fillRequirement utconv $misc_tools
+  if ! $filled; then exit 1; fi
+) || print_usage_and_exit
+
+# === Define the commonly used and useful functions ===================
 
 detectOS() {
   case "$(uname -s)" in
