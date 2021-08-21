@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 ###############################################################################
 #
@@ -68,7 +68,7 @@
 
 # === Initialize shell environment ===================================
 set -eu
-if command -v umask &> /dev/null; then umask 0022; fi
+if command -v umask >/dev/null 2>&1; then umask 0022; fi
 export LC_ALL=C
 export PATH="$(command -p getconf PATH 2>/dev/null)${PATH+:}${PATH-}"
 case $PATH in :*) PATH=${PATH#?};; esac
@@ -84,11 +84,11 @@ error_exit() {
 }
 
 print_usage_and_exit() {
-  cat <<-USAGE 1>&2
+  cat <<-USAGE_END 1>&2
   Usage       : ${0##*/} [options] [XML_file]
   Description :
   Requirement :
-USAGE
+USAGE_END
 exit 1
 }
 
@@ -130,47 +130,49 @@ detectOS() {
   esac
 }
 
-cmd_exist() {
-  if command -v "$1" &> /dev/null; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-
 make_tempfile() {
-  #--------------------------------------------------
-  #Usage:
-  # make_tempfile [prefix] [suffix] [dir_path]
-  #--------------------------------------------------
   (
-  now=$(date +'%Y%m%d%H%M%S') || return $?
-  file="${3:-${TMPDIR:-/tmp}}/${1:-}$now-$$${2:-}"
-  if [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-    umask 0077
-  fi
-  set -C
-  : > "$file" || return $?
-  echo "$file"
-)
+  dir=${TMPDIR:-}
+  [ -d "${TMPDIR:-}" ] || dir='/tmp'
+  dir=${dir%/}
+
+  while : ; do
+    now=$(date +'%Y%m%d%H%M%S') || return $?
+    file="$now-$$"
+    set -C
+    case "$(uname -s)" in Linux* ) umask 0077 ;; esac
+    : > "$dir/$file" 2>/dev/null
+    case $? in 0) printf "%s" "$dir/$file"; break;; esac
+    file=''
+  done
+  )
 }
 
 make_tempdir() {
-  #--------------------------------------------------
-  #Usage:
-  # make_tempdir [prefix] [suffix] [dir_path]
-  #--------------------------------------------------
   (
-  now=$(date +'%Y%m%d%H%M%S') || return $?
-  file="${3:-${TMPDIR:-/tmp}}/${1:-}$now-$$${2:-}"
-  if [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-    umask 0077
-  fi
-  mkdir "$file" || return $?
-  echo "$file"
-)
+  dir=${TMPDIR:-}
+  [ -d "${TMPDIR:-}" ] || dir='/tmp'
+  dir=${dir%/}
+  while : ; do
+    now=$(date +'%Y%m%d%H%M%S') || return $?
+    if [ -c /dev/urandom ]; then
+      random=$(cat /dev/urandom            |
+               dd count=1 bs=8 2>/dev/null |
+               od -A n -t x1               |
+               tr -d ' '                   )
+    else
+      random=""
+    fi
+    file="$now-$random-$$"
+    set -C
+    case "$(uname -s)" in Linux* ) umask 0077 ;; esac
+    mkdir "$dir/$file" 2>/dev/null
+    case $? in 0) printf "%s" "$dir/$file"; break;; esac
+    file=''
+  done
+  )
 }
+
 
 ######################################################################
 # Parse Arguments
