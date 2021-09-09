@@ -68,6 +68,9 @@
 
 # === Initialize shell environment ===================================
 set -eu
+unset -f unalias
+\unalias -a
+unset -f command
 if command -v umask >/dev/null 2>&1; then umask 0022; fi
 export LC_ALL=C
 export PATH="$(command -p getconf PATH 2>/dev/null)${PATH+:}${PATH-}"
@@ -218,10 +221,7 @@ while [ $# -gt 0 ]; do
                     ;;
           -*)       print_usage_and_exit
                     ;;
-          *)        case "$arg1" in '') arg1=$1; shift; continue ;; esac
-                    case "$arg2" in '') arg2=$1; shift; continue ;; esac
-                    case "$arg3" in '') arg3=$1; shift; continue ;; esac
-                    break
+          *)        break
                     ;;
         esac
         ;;
@@ -240,6 +240,21 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+case $# in
+  0)
+    if [ -p /dev/stdin ]; then
+      arg1=$(cat -)
+    else
+      print_usage_and_exit
+    fi ;;
+  1)
+    msg=$1
+    ;;
+  *)
+    print_usage_and_exit
+    ;;
+esac
 
 ###############################################################################
 # Main Routine 
