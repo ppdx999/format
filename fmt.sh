@@ -129,6 +129,7 @@ detectOS() {
     Darwin*)    echo Mac;;
     CYGWIN*)    echo Cygwin;;
     MINGW*)     echo MinGw;;
+    MSYS*)      echo MSYS;;
     *)          echo "UNKNOWN:$(uname -s)"
   esac
 }
